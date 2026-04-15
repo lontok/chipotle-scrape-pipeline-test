@@ -44,12 +44,12 @@ if __name__ == "__main__":
     }
 
     response = requests.post(api_url, headers=headers, json=payload)
-
     data = response.json()
     results = data["data"]["web"]
     print(f"Firecrawl returned {len(results)} results")
 
+    # --- Step 02: Save results to knowledge/raw/ ---
+
     for r in results:
-        print(f"  - {r['title']}")
-        print(f"    {r['url']}")
-        print(f"    markdown length: {len(r.get('markdown') or '')} chars")
+        saved = save_result(r, RUN_TS)
+        print(f"  Saved → {saved}")

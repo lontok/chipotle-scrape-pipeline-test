@@ -44,6 +44,7 @@ if __name__ == "__main__":
     }
 
     response = requests.post(api_url, headers=headers, json=payload)
+    response.raise_for_status()
     data = response.json()
     results = data["data"]["web"]
     print(f"Firecrawl returned {len(results)} results")

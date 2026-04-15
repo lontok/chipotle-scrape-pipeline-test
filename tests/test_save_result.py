@@ -50,6 +50,19 @@ def test_save_result_omits_missing_description(tmp_path):
     assert "description:" not in content
 
 
+def test_save_result_omits_absent_description(tmp_path):
+    result = {
+        "title": "SEC Filings",
+        "url": "https://ir.chipotle.com/sec-filings",
+        "markdown": "# SEC Filings",
+    }
+    ts = "2026-04-15T08-25-00"
+    saved = save_result(result, ts, output_dir=tmp_path)
+    content = saved.read_text()
+
+    assert "description:" not in content
+
+
 def test_save_result_slug_special_chars(tmp_path):
     result = {
         "title": "Q1 2026: Earnings & Results!",

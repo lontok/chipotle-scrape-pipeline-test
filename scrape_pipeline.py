@@ -11,13 +11,13 @@ load_dotenv()
 api_key = os.getenv("FIRECRAWL_API_KEY")
 
 OUTPUT_DIR = Path("knowledge/raw")
-RUN_TS = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
 
 
 def save_result(result: dict, ts: str, output_dir: Path = OUTPUT_DIR) -> Path:
     slug = re.sub(r'[^a-z0-9]+', '-', result['title'].lower()).strip('-')
     filename = f"{ts}_{slug}.md"
     path = output_dir / filename
+    output_dir.mkdir(parents=True, exist_ok=True)
     frontmatter = f"---\ntitle: {result['title']}\nurl: {result['url']}\n"
     if result.get('description'):
         frontmatter += f"description: {result['description']}\n"
@@ -27,6 +27,8 @@ def save_result(result: dict, ts: str, output_dir: Path = OUTPUT_DIR) -> Path:
 
 
 if __name__ == "__main__":
+    RUN_TS = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+
     # --- Step 01: Search + scrape with Firecrawl ---
 
     api_url = "https://api.firecrawl.dev/v2/search"

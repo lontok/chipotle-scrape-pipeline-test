@@ -61,7 +61,7 @@ def already_scraped(url: str, root: Path = None) -> bool:
     needle = f"url: {url}\n"
     for md_file in root.rglob("*.md"):
         try:
-            text = md_file.read_text()
+            text = md_file.read_text(encoding="utf-8")
         except OSError:
             continue
         if needle in text:

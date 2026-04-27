@@ -10,6 +10,25 @@ load_dotenv()
 
 api_key = os.getenv("FIRECRAWL_API_KEY")
 
+
+def firecrawl_scrape(url: str) -> dict:
+    response = requests.post(
+        "https://api.firecrawl.dev/v2/scrape",
+        headers={"Authorization": f"Bearer {api_key}"},
+        json={"url": url, "formats": ["markdown"]},
+    )
+    response.raise_for_status()
+    body = response.json()
+    data = body["data"]
+    metadata = data.get("metadata", {})
+    return {
+        "title": metadata.get("title", ""),
+        "url": metadata.get("url") or metadata.get("sourceURL") or url,
+        "description": metadata.get("description", ""),
+        "markdown": data.get("markdown", ""),
+    }
+
+
 OUTPUT_DIR = Path("knowledge/raw")
 
 

@@ -1,4 +1,6 @@
 from unittest.mock import patch, MagicMock
+import pytest
+import requests
 from scrape_pipeline import firecrawl_scrape
 
 
@@ -53,4 +55,18 @@ def test_firecrawl_scrape_falls_back_to_sourceurl_when_url_missing():
     with patch("scrape_pipeline.requests.post", return_value=fake_response):
         result = firecrawl_scrape("https://example.com/fallback")
 
-    assert result["url"] == "https://example.com/fallback"
+    assert result == {
+        "title": "T",
+        "url": "https://example.com/fallback",
+        "description": "",
+        "markdown": "body",
+    }
+
+
+def test_firecrawl_scrape_raises_on_http_error():
+    fake_response = MagicMock()
+    fake_response.raise_for_status.side_effect = requests.exceptions.HTTPError("403")
+
+    with patch("scrape_pipeline.requests.post", return_value=fake_response):
+        with pytest.raises(requests.exceptions.HTTPError):
+            firecrawl_scrape("https://example.com/article")

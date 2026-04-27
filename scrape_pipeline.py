@@ -29,6 +29,25 @@ def firecrawl_scrape(url: str) -> dict:
     }
 
 
+ARTICLE_URL_PATTERNS = {
+    "ir.chipotle.com": re.compile(r"https://ir\.chipotle\.com/\d{4}-\d{2}-\d{2}-[^\s)\"']+"),
+    "newsroom.chipotle.com": re.compile(r"https://newsroom\.chipotle\.com/\d{4}-\d{2}-\d{2}-[^\s)\"']+"),
+}
+
+
+def extract_article_urls(listing_md: str, listing_url: str) -> list[str]:
+    for host, pattern in ARTICLE_URL_PATTERNS.items():
+        if host in listing_url:
+            seen = set()
+            ordered: list[str] = []
+            for match in pattern.findall(listing_md):
+                if match not in seen:
+                    seen.add(match)
+                    ordered.append(match)
+            return ordered
+    return []
+
+
 OUTPUT_DIR = Path("knowledge/raw")
 
 

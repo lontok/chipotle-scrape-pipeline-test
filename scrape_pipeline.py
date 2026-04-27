@@ -53,6 +53,19 @@ def extract_article_urls(listing_md: str, listing_url: str) -> list[str]:
 
 OUTPUT_DIR = Path("knowledge/raw")
 
+LISTINGS = [
+    {
+        "name": "investor-relations",
+        "url": "https://ir.chipotle.com/Financial-Releases",
+        "subdir": "investor-relations",
+    },
+    {
+        "name": "newsroom",
+        "url": "https://newsroom.chipotle.com/press-releases",
+        "subdir": "newsroom",
+    },
+]
+
 
 def already_scraped(url: str, root: Path = None) -> bool:
     root = root if root is not None else OUTPUT_DIR
@@ -82,31 +95,21 @@ def save_result(result: dict, ts: str, output_dir: Path = OUTPUT_DIR) -> Path:
     return path
 
 
+def main() -> None:
+    run_ts = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+    for listing in LISTINGS:
+        listing_data = firecrawl_scrape(listing["url"])
+        urls = extract_article_urls(listing_data.get("markdown", ""), listing["url"])
+        if not urls:
+            print(f"WARN: 0 URLs extracted from {listing['name']}")
+        new_urls = [u for u in urls if not already_scraped(u)]
+        for url in new_urls:
+            article = firecrawl_scrape(url)
+            saved = save_result(article, run_ts, OUTPUT_DIR / listing["subdir"])
+            print(f"  Saved → {saved}")
+        skipped = len(urls) - len(new_urls)
+        print(f"{listing['name']}: {len(urls)} URLs found, {len(new_urls)} new, {skipped} skipped")
+
+
 if __name__ == "__main__":
-    RUN_TS = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-
-    # --- Step 01: Search + scrape with Firecrawl ---
-
-    api_url = "https://api.firecrawl.dev/v2/search"
-
-    headers = {
-        "Authorization": f"Bearer {api_key}"
-    }
-
-    payload = {
-        "query": "Chipotle investor relations press releases",
-        "limit": 5,
-        "scrapeOptions": {"formats": ["markdown"]}
-    }
-
-    response = requests.post(api_url, headers=headers, json=payload)
-    response.raise_for_status()
-    data = response.json()
-    results = data["data"]["web"]
-    print(f"Firecrawl returned {len(results)} results")
-
-    # --- Step 02: Save results to knowledge/raw/ ---
-
-    for r in results:
-        saved = save_result(r, RUN_TS)
-        print(f"  Saved → {saved}")
+    main()

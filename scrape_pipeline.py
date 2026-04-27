@@ -54,6 +54,21 @@ def extract_article_urls(listing_md: str, listing_url: str) -> list[str]:
 OUTPUT_DIR = Path("knowledge/raw")
 
 
+def already_scraped(url: str, root: Path = None) -> bool:
+    root = root if root is not None else OUTPUT_DIR
+    if not root.exists():
+        return False
+    needle = f"url: {url}\n"
+    for md_file in root.rglob("*.md"):
+        try:
+            text = md_file.read_text()
+        except OSError:
+            continue
+        if needle in text:
+            return True
+    return False
+
+
 def save_result(result: dict, ts: str, output_dir: Path = OUTPUT_DIR) -> Path:
     slug = re.sub(r'[^a-z0-9]+', '-', result['title'].lower()).strip('-')
     filename = f"{ts}_{slug}.md"

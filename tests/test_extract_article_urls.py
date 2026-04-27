@@ -48,3 +48,12 @@ def test_extract_article_urls_dedupes_within_listing():
 def test_extract_article_urls_unknown_host_returns_empty():
     urls = extract_article_urls("anything", "https://example.com/listing")
     assert urls == []
+
+
+def test_extract_article_urls_strips_url_fragments_for_dedup():
+    md = """
+    [Article](https://ir.chipotle.com/2025-12-12-BIG-MILESTONE-LITTLE-APPLE)
+    [Photos](https://ir.chipotle.com/2025-12-12-BIG-MILESTONE-LITTLE-APPLE#assets_20295_122817-3)
+    """
+    urls = extract_article_urls(md, "https://ir.chipotle.com/Financial-Releases")
+    assert urls == ["https://ir.chipotle.com/2025-12-12-BIG-MILESTONE-LITTLE-APPLE"]

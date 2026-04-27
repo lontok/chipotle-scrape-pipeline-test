@@ -45,9 +45,10 @@ def extract_article_urls(listing_md: str, listing_url: str) -> list[str]:
     seen: set[str] = set()
     ordered: list[str] = []
     for match in pattern.findall(listing_md):
-        if match not in seen:
-            seen.add(match)
-            ordered.append(match)
+        canonical = match.split("#", 1)[0]
+        if canonical not in seen:
+            seen.add(canonical)
+            ordered.append(canonical)
     return ordered
 
 
